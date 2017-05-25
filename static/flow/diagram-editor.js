@@ -175,7 +175,14 @@ function viewRecordedData(e) {
 function exploreData(e) {
 	var block = g_diagram.findBlockById(e.data.id);
 	if (block) {
-		CodapTest.sendSequence(block.view.yData.data);
+		CodapBridge.sendSequence(block.view.yData.data);
+	}
+}
+
+// explore all input block data in CODAP
+function exploreAllData() {
+	if(g_diagram) {
+		CodapBridge.sendAllInputSequences(g_diagram);
 	}
 }
 

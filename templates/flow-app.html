@@ -49,7 +49,6 @@
 			<div id="diagramList">Connecting to controller...</div>
 			<button class="btn btn-primary" onclick="newDiagram()">New Diagram</button>
 			<button class="btn btn-primary" onclick="closeControllerViewer()">Close Controller</button>
-			<!--button class="btn" onclick="CodapTest.sendSequence([3,1,4,1,5,9,2,6,5]);">Test CODAP</button-->
 			<!-- <button class="btn" onclick="sendMessage('request_status');">Check Status</button> -->
 		</div>
 		<div class="col-md-4"></div>
@@ -87,7 +86,7 @@
 	<div class="menuBar">
 		<button class="btn" onclick="g_plotHandler.toggleIntervalSelect()">Select Interval</button>
 		{% if use_codap %}
-		<button class="btn" onclick="explorePlotterData()">Explore Data in CODAP</button>
+		<button class="btn" onclick="exploreAllData()">Explore Data in CODAP</button>
 		{% endif %}
 		<button class="btn" onclick="g_plotHandler.zoomIn()">Zoom In</button>
 		<button class="btn" onclick="g_plotHandler.zoomOut()">Zoom Out</button>
@@ -107,7 +106,7 @@ var g_useCodap = {{ use_codap }};
 $(function() {
 	initFlowApp();
 {% if use_codap %}
-	initCodapBridge();
+	CodapBridge.initialize();
 {% endif %}
 });
 

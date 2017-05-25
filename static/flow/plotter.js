@@ -37,47 +37,51 @@ function closePlotter() {
 	showDiagramEditor();
 }
 
-
-function getServerSequenceData(params) {
-	// handle sequence history data received from server
-	var handler = function(data) {
-		var values = data.values;
-		var timestamps = data.timestamps;
-
-		console.log('received', values.length, 'values');
-		console.log('received', timestamps.length, 'timestamps');
-
-		// make sure all values are numeric (or null)
-		// fix(faster): do on server
-		var len = values.length;
-		for (var i = 0; i < len; i++) {
-			var val = values[i];
-			if (val !== null) {
-				values[i] = +val;  // convert to number
-			}
-		}
-
-		// update plot data
-		g_xData.data = timestamps;
-		g_yData.data = values;
-
-		/* ---- disabling local history for now ----
-		// merge server data with local data
-		// sanity check to ensure server timestamps are earlier than local time
-		if (g_localTimestamps[0] - timestamps[0] > 0){
-			Array.prototype.unshift.apply(g_localTimestamps, timestamps);
-			Array.prototype.unshift.apply(g_localValues, values);
-		}
-		*/
-		g_plotHandler.plotter.autoBounds();
-		g_plotHandler.drawPlot(null, null);
-
+function getServerSequenceDataByName(params, sequenceName, handler) {
+	if(handler == null) {
+		handler = sequencePlotHandler;
 	}
-
-	var url = '/api/v1/resources' + g_controller.path + '/' + g_sequenceName;
-	$.get(url, params, handler);
+	var url = '/api/v1/resources' + g_controller.path + '/' + sequenceName;
+	return $.get(url, params, handler);
 }
 
+function getServerSequenceData(params, handler) {
+	return getServerSequenceDataByName(params, g_sequenceName, handler);
+}
+
+function sequencePlotHandler(data) {
+	var values = data.values;
+	var timestamps = data.timestamps;
+	
+	console.log('SEQUENCE PLOT HANDLER: received', data);
+	//console.log('received', values.length, 'values');
+	//console.log('received', timestamps.length, 'timestamps');
+
+	// make sure all values are numeric (or null)
+	// fix(faster): do on server
+	var len = values.length;
+	for (var i = 0; i < len; i++) {
+		var val = values[i];
+		if (val !== null) {
+			values[i] = +val;  // convert to number
+		}
+	}
+
+	// update plot data
+	g_xData.data = timestamps;
+	g_yData.data = values;
+
+	/* ---- disabling local history for now ----
+	// merge server data with local data
+	// sanity check to ensure server timestamps are earlier than local time
+	if (g_localTimestamps[0] - timestamps[0] > 0){
+		Array.prototype.unshift.apply(g_localTimestamps, timestamps);
+		Array.prototype.unshift.apply(g_localValues, values);
+	}
+	*/
+	g_plotHandler.plotter.autoBounds();
+	g_plotHandler.drawPlot(null, null);
+}
 
 // add a sequence to be displayed in the plotter screen
 function addSequence(block) {
@@ -116,8 +120,7 @@ function addSequence(block) {
 	*/
 }
 
-
-function setTimeFrame(timeStr) {
+function getFrameSeconds(timeStr) {
 	var frameSeconds;
 
 	if (timeStr === '1m'){
@@ -133,7 +136,13 @@ function setTimeFrame(timeStr) {
 	} else if (timeStr === '30d'){
 		frameSeconds = 60 * 60 * 24 * 30;
 	}
+	return frameSeconds;
+}
 
+function setTimeFrame(timeStr) {
+	
+	var frameSeconds = getFrameSeconds(timeStr);
+	
 	var now = moment().valueOf(),
 			start = moment(now - (frameSeconds * 1000)).toISOString(),
 			end = moment(now).toISOString();
@@ -142,10 +151,10 @@ function setTimeFrame(timeStr) {
 		count: 100000,
 		start_timestamp: start,
 		end_timestamp: end
-	})
+	});
 }
 
-
+/*
 function explorePlotterData() {
 	if (g_yData && g_yData.data.length) {
 		var data;
@@ -167,7 +176,7 @@ function explorePlotterData() {
 		CodapTest.sendSequence(data);
 	}
 }
-
+*/
 
 // delete all history for this sequence
 function deleteSequenceData() {
